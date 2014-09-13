@@ -111,11 +111,17 @@ foreach $module (sort $vdb->get_modules()) {
 	   $vdb->get_module_signal($module,$sig);
 
 	&log ("   signal: $sig $type $type2 |$range|\n");
+  # Error: Input declared as reg
 	if(($type eq "input") && ($type2 eq "reg")) {
 		&print_error("Input signal $sig has been declared as reg ($file:$line)");
 	}
+  # Warning: Declared as integer
   if($type2 eq "integer") {
     &print_warning("Signal $sig has been declared as integer ($file:$line)");
+  }
+  # Error: Variable has more than one definition
+  if(($type =~ m/input|output|inout/) && ($type2 =~ m/input|output|inout/)) {
+    &print_error("Signal $sig has more than one definition ($file:$line)");
   }
 	&log ("      defined  $file:$line\n");
 	&log ("      assigned $a_file:$a_line\n");
