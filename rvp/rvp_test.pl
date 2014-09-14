@@ -152,25 +152,31 @@ foreach $module (sort $vdb->get_modules()) {
     }
 
     print "\n";
+    my @declared_instances = ();
     for (($imod,$f,$iname,$l) = $vdb->get_first_instantiation($module );
-	 $imod;
+	       $imod;
          ($imod,$f,$iname,$l) = $vdb->get_next_instantiation()) {
+      my %declared_instances_hash = map {$_ => 1} @declared_instances;
+      if(exists($declared_instances_hash{$iname})) {
+        &print_error("Module $iname has been declared before. ($f:$l)");
+      } else {
+        push(@declared_instances, $iname);
+      }
+    	&log ("     instance: $iname of $imod\n");
+    	%port_con = $vdb->get_current_instantiations_port_con();
+    	foreach $port (sort keys %port_con) {
+    	    my $p = $port_con{$port};
+    	    $p =~ s/[ \n]//gs;
+    	    &log ("        $port connected to \"$p\"\n");
+    	}
 
-	&log ("     instance: $iname of $imod\n");
-	%port_con = $vdb->get_current_instantiations_port_con();
-	foreach $port (sort keys %port_con) {
-	    my $p = $port_con{$port};
-	    $p =~ s/[ \n]//gs;
-	    &log ("        $port connected to \"$p\"\n");
-	}
 
-
-	%parameters = $vdb->get_current_instantiations_parameters();
-	foreach my $p (sort keys %parameters) {
-	    my $v = $parameters{$p};
-	    $v =~ s/[ \n]//gs;
-	    &log ("        parameter $p set to to \"$v\"\n");
-	}
+    	%parameters = $vdb->get_current_instantiations_parameters();
+    	foreach my $p (sort keys %parameters) {
+    	    my $v = $parameters{$p};
+    	    $v =~ s/[ \n]//gs;
+    	    &log ("        parameter $p set to to \"$v\"\n");
+    	}
 
 
     }
