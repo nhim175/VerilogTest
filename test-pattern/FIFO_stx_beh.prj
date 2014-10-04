@@ -1,0 +1,6 @@
+verilog isim_temp "full_empty_ctrl.v"
+verilog isim_temp "fifo_write_control.v"
+verilog isim_temp "fifo_read_ctrl.v"
+verilog isim_temp "fifo_mem.v"
+verilog isim_temp "FIFO.v"
+verilog isim_temp "C:/Xilinx/13.1/ISE_DS/ISE//verilog/src/glbl.v"
