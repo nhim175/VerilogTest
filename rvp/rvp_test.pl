@@ -88,20 +88,92 @@ sub log {
 	}
 }
 
+sub count_string_in_file {
+  my ($str,$file) = @_;
+  my ($file_path) = $vdb->get_files_full_name($file);
+  if (length $file_path == 0) {
+    return 0;
+  }
+  my $fh;
+  open $fh, "<", $file_path or die "could not open $file: $!";
+  my @contents = <$fh>;
+  my @filtered = grep (/${str}/ ,@contents);
+  close $fh;
+  return scalar @filtered;
+}
+
+sub find_string_in_file {
+  # return line number
+  my ($str, $file) = @_;
+  my ($file_path) = $vdb->get_files_full_name($file);
+  if (length $file_path == 0) {
+    return -1;
+  }
+  my $fh;
+  open $fh, "<", $file_path or die "could not open $file: $!";
+  while(<$fh>) {
+    return $. if /$str/i;
+  }
+  return -1;
+}
+
 foreach $module (sort $vdb->get_modules()) {
     &print_title("Module $module");
 
+    #Warning: Initial
+    my ($module_path) = $vdb->get_modules_file($module);
+    my $initial_line = &find_string_in_file("initial", $module_path);
+    if($initial_line != -1) {
+      &print_warning("Initial block is not synthesizable! ($module_path:$initial_line)");
+    }
+
+    #Warning: Delay
+    my $delay_line = &find_string_in_file("#[0-9]+", $module_path);
+    if($delay_line != -1) {
+      &print_warning("Delay is not synthesizable! ($module_path:$delay_line)");
+    }
+
+    #Warning: Division
+    my $division_line = &find_string_in_file("[a-zA-Z0-9_\$]+\ *\/\ *[a-zA-Z0-9_\$]+", $module_path);
+    if($division_line != -1) {
+      &print_warning("Division is not synthesizable! ($module_path:$division_line)");
+    }
+
+    #Warning: === !== operators
+    my $operator_line = &find_string_in_file("===|!==", $module_path);
+    if($operator_line != -1) {
+      &print_warning("=== or !== is not synthesizable! ($module_path:$operator_line)");
+    }
+
+    #Warning: fork join operators
+    my $fork_join_line = &find_string_in_file("fork|join", $module_path);
+    if($fork_join_line != -1) {
+      &print_warning("fork and join is not synthesizable! ($module_path:$fork_join_line)");
+    }
+
+    #Warning: trigger operators
+    my $trigger_line = &find_string_in_file("->", $module_path);
+    if($trigger_line != -1) {
+      &print_warning("trigger is not synthesizable! ($module_path:$trigger_line)");
+    }
+
+    #Warning: casex
+    my $casex_line = &find_string_in_file("casex", $module_path);
+    if($casex_line != -1) {
+      &print_warning("casex is not synthesizable! ($module_path:$casex_line)");
+    }
+
     %parameters = $vdb->get_modules_parameters($module);
     foreach my $p (sort keys %parameters) {
-	my $v = $parameters{$p};
-	$v =~ s/[ \n]//gs;
-	unless (looks_like_number($v)) {
-		foreach my $p (keys %parameters) {
-			$v =~ s/$p/$parameters{$p}/g;
-		}
-		$v = eval($v);
-	}
-	&log("   parameter: $p defaults to \"$v\"\n");
+    	my $v = $parameters{$p};
+    	$v =~ s/[ \n]//gs;
+    	unless (looks_like_number($v)) {
+    		foreach my $p (keys %parameters) {
+    			$v =~ s/$p/$parameters{$p}/g;
+    		}
+    		$v = eval($v);
+    	}
+    	&log("   parameter: $p defaults to \"$v\"\n");
     }
 
 
@@ -109,6 +181,13 @@ foreach $module (sort $vdb->get_modules()) {
 	($line,$a_line,$i_line,$type,$file,$posedge,$negedge,
 	 $type2,$s_file,$s_line,$range,$a_file,$i_file,$dims, $width) = 
 	   $vdb->get_module_signal($module,$sig);
+
+    # Check if variable is not used
+    # my $count = &count_string_in_file($sig, $s_file);
+    # print "found $count occurrences of $sig in $s_file";
+    # if($count == 1) {
+    #   &print_warning("Signal $sig has not been used!");
+    # }
 
 	&log ("   signal: $sig $type $type2 |$range|\n");
   # Error: Input declared as reg
@@ -123,6 +202,10 @@ foreach $module (sort $vdb->get_modules()) {
   if(($type =~ m/input|output|inout/) && ($type2 =~ m/input|output|inout/)) {
     &print_error("Signal $sig has more than one definition ($file:$line)");
   }
+  #Warning: Variable has not been assigned
+  if($a_line == -1 and length $s_file == 0) {
+    &print_warning("Signal $sig has not been assigned! ($file:$line)");
+  }
 	&log ("      defined  $file:$line\n");
 	&log ("      assigned $a_file:$a_line\n");
 	&log ("      source   $s_file:$s_line\n");
@@ -135,20 +218,20 @@ foreach $module (sort $vdb->get_modules()) {
 	}
 
 
-	for (($imod,$iname,$port,$l, $f) = 
-	     $vdb->get_first_signal_port_con($module,$sig );
-	     $imod;
-	     ($imod,$iname,$port,$l, $f) = 
-	     $vdb->get_next_signal_port_con()) {
-			my ($s_line,$s_a_line,$s_i_line,$s_type,$s_file,$s_p,$s_n, $s_type2,$s_r_file,$s_r_line,$range,$s_a_file,$s_i_file, $s_dimension, $s_width) = $vdb->get_module_signal($imod,$port);
-			$s_width = &parse_parameter($s_width, $imod);
-	    &log ("     connected to: port $port (width: $s_width) of instance $iname of $imod\n");
+  for (($imod,$iname,$port,$l, $f) = 
+       $vdb->get_first_signal_port_con($module,$sig );
+       $imod;
+       ($imod,$iname,$port,$l, $f) = 
+       $vdb->get_next_signal_port_con()) {
+      my ($s_line,$s_a_line,$s_i_line,$s_type,$s_file,$s_p,$s_n, $s_type2,$s_r_file,$s_r_line,$range,$s_a_file,$s_i_file, $s_dimension, $s_width) = $vdb->get_module_signal($imod,$port);
+      $s_width = &parse_parameter($s_width, $imod);
+      &log ("     connected to: port $port (width: $s_width) of instance $iname of $imod\n");
 
-	    # Check if port width mismatch
-	    if ($width != $s_width) {
-	    	&print_warning("Signal $sig (width: $width) connected to: port $port (width: $s_width) of instance $iname of $imod ($l:$f)");
-	    }
-	}
+      # Check if port width mismatch
+      if ($width != $s_width) {
+        &print_warning("Signal $sig (width: $width) connected to: port $port (width: $s_width) of instance $iname of $imod ($l:$f)");
+      }
+  }
     }
 
     print "\n";
