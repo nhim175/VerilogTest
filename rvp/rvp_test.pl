@@ -17,6 +17,8 @@ require rvp;
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
 use Term::ANSIColor qw(:constants);
+use constant false => 0;
+use constant true  => 1;
 
 @files            = @ARGV;
 %cmd_line_defines = ();
@@ -106,13 +108,18 @@ sub find_string_in_file {
   # return line number
   my ($str, $file) = @_;
   my ($file_path) = $vdb->get_files_full_name($file);
+  my ($in_comment_block) = false;
   if (length $file_path == 0) {
     return -1;
   }
   my $fh;
   open $fh, "<", $file_path or die "could not open $file: $!";
   while(<$fh>) {
-    return $. if /$str/i;
+    if(/\/\*/) { $in_comment_block = true; }
+    if(/\*\//) { $in_comment_block = false; }
+    if(not /(^`.*)|(^\/\/.*)/) { #comment or directives
+      return $. if /$str/i and $in_comment_block == false;
+    }
   }
   return -1;
 }
