@@ -254,11 +254,19 @@ foreach $module (sort $vdb->get_modules()) {
       }
     	&log ("     instance: $iname of $imod\n");
     	%port_con = $vdb->get_current_instantiations_port_con();
+
+      # Warning: Unconnected module
+      my $unconnected = true;
     	foreach $port (sort keys %port_con) {
     	    my $p = $port_con{$port};
     	    $p =~ s/[ \n]//gs;
     	    &log ("        $port connected to \"$p\"\n");
+          if ($p) { $unconnected = false; }
     	}
+
+      if($unconnected == true) {
+        &print_warning ("Module $iname is unconnected. ($f:$l)")
+      }
 
 
     	%parameters = $vdb->get_current_instantiations_parameters();
