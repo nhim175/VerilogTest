@@ -14,3 +14,7 @@ span.title {
 span.warning {
 	color: #CCA300;
 }
+
+.hidden {
+  display: none;
+}
