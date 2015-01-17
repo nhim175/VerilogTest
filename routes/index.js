@@ -18,7 +18,7 @@ router.post('/', function(req, res) {
 	  for(var i = 0; i < uploadedFiles.length; i++) {
 	  	exec('mv ' + uploadedFiles[i].fd + ' ./uploads/' + session_id + '/' + uploadedFiles[i].filename);
 	  }
-	  exec('perl ./rvp/rvp_test.pl ./uploads/' + session_id + '/*.v', function(err, stdout, stderr) {
+	  exec('cd rvp && perl ./rvp_test.pl ../uploads/' + session_id + '/*.v', function(err, stdout, stderr) {
 		  return res.render('result', { result: stdout });
 	  });
 	});

@@ -13,7 +13,7 @@
 #
 ###############################################################################
 
-require rvp;
+require "./rvp.pm";
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
 use Term::ANSIColor qw(:constants);
