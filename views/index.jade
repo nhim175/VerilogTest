@@ -1,6 +1,21 @@
 extends layout
 
 block content
+  h1 VERILOG HDL design rule check application.
+
+  p This application is for hardware designers who use Verilog HDL language, which can help engineers to cut off wasting time in checking and debugging processes. This application targets the following three categories.
+
+  ol
+    li There are some requirements for syntax in using Verilog HDL language that the engineers have to follow when they design logic circuits. If there is any mistake, it leads to illegal syntax of Verilog HDL which will be detected as code violation in compile process. The debug application checks the descriptions and notices the engineers by error announcements.
+    li There are some mistakes that make the described designs work incorrectly such as using non synthesizable statements or mismatch of connections between modules. These are syntactically legal and do not make any code violation of Verilog HDL. They are not detected as mistakes in front-end compile process. The debug application traces the descriptions and gives warnings to tell the engineers to pay attention.
+    li For helping engineers to optimize their designs, the application reviews the design and gives warnings about redundant parts and useless variables to the engineers.
+
+  p It is in development process, it may lack of some function or still many miss. I will so happy and thankful for any idea from all users. Please feel free to leave comment or email me: <b>Hoang Anh Tuan</b> - <a href="mailto:tuan85hoang@gmail.com">tuan85hoang@gmail.com</a>
+  
+  hr
+
+  h2 Choose all verilog files of your project and press send
+
   form(method='POST', action='/', enctype='multipart/form-data')
     input(type='file', name='files', multiple='multiple', accept='.v')
     br

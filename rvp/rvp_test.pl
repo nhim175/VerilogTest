@@ -26,8 +26,8 @@ $quiet            = 1;
 @inc_dirs         = ();
 @lib_dirs         = ();
 @lib_exts         = ();
-$production 			= 1;
-$debug 						= 0;
+$production 	= 1;
+$debug 		= 0;
 
 print "<div class='hidden'>";
 $vdb = rvp->read_verilog(\@files,[],\%cmd_line_defines,

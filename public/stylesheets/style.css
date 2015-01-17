@@ -1,10 +1,16 @@
 body {
+  max-width: 600px;
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0 auto;
 }
 
 a {
   color: #00B7FF;
+}
+
+pre * {
+	white-space: normal;
 }
 
 span.title {
