@@ -4,6 +4,7 @@ var formidable = require('formidable');
 var util = require('util');
 var uuid = require('node-uuid');
 var exec = require('child_process').exec;
+var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -18,7 +19,11 @@ router.post('/', function(req, res) {
 	  for(var i = 0; i < uploadedFiles.length; i++) {
 	  	exec('mv ' + uploadedFiles[i].fd + ' ./uploads/' + session_id + '/' + uploadedFiles[i].filename);
 	  }
+    var currentTime = new Date().toString();
+    var logFile = currentTime + '.txt';
+    var logStream = fs.createWriteStream('logs/' + logFile, {flags: 'a'});
 	  exec('cd rvp && perl ./rvp_test.pl ../uploads/' + session_id + '/*.v', function(err, stdout, stderr) {
+      logStream.write(stdout);
 		  return res.render('result', { result: stdout });
 	  });
 	});
