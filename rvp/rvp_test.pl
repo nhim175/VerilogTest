@@ -113,6 +113,20 @@ sub find_string_in_file {
   return -1;
 }
 
+sub get_line_in_file {
+  my ($lineWanted, $file) = @_;
+  my ($file_path) = $vdb->get_files_full_name($file);
+  open my $fh, '<', $file_path or die "$file_path: $!";
+  my $line;
+  while( <$fh> ) {
+      if( $. == $lineWanted ) { 
+          $line = $_;
+          return $line;
+          last;
+      }
+  }
+}
+
 foreach $module (sort $vdb->get_modules()) {
     &print_title("Module $module");
 
@@ -255,8 +269,16 @@ foreach $module (sort $vdb->get_modules()) {
       &log ("     connected to: port $port (width: $s_width) of instance $iname of $imod\n");
 
       # Check if port width mismatch
-      if ($width != $s_width) {
-        &print_warning("Signal $sig (width: $width) connected to: port $port (width: $s_width) of instance $iname of $imod ($l:$f)");
+      my $line = &get_line_in_file($l, $f);
+      $line =~ m/\((?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*\[\s*(\d+)\s*\:\s*(\d+)\s*\]\s*\)/;
+      my $width_tmp;
+      if ($1) {
+        $width_tmp = eval("$1 + 1 - $2");
+      } else {
+        $width_tmp = $width;
+      }
+      if ($width_tmp != $s_width) {
+        &print_warning("Signal $sig (width: $width_tmp) connected to: port $port (width: $s_width) of instance $iname of $imod ($l:$f)");
       }
   }
     }
