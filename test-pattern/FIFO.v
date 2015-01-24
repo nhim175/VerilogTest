@@ -1,10 +1,9 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company:  NEC Engineering
+// Engineer: Hoang Anh Tuan
 // 
 // Create Date:    21:01:00 08/10/2014 
-// Design Name: 
+// Design Name:    FIFO Ipcore
 // Module Name:    FIFO 
 // Project Name: 
 // Target Devices: 
@@ -15,8 +14,8 @@
 //
 // Revision: 
 // Revision 0.01 - File Created
-// Additional Comments: 
-//
+// Additional Comments: Please do not use or copy without the agreement of the
+// author. 
 //////////////////////////////////////////////////////////////////////////////////
 module FIFO(
      i_clk,
@@ -31,11 +30,10 @@ module FIFO(
 //parameter
 parameter WIDTH = 8;
 parameter DEPTH = 32;
-parameter UP_BIT =  (DEPTH ==16)? 4 :
-						  (DEPTH ==32)? 5 : 6  ;
+parameter UP_BIT =  (DEPTH ==16)? 4 : (DEPTH ==32)? 5 : 6  ;
 //interface
 input wire							i_clk;
-input wire		[WIDTH-1:0]		i_data;
+input wire		[WIDTH-1:0]				i_data;
 input wire							i_rest;
 input wire							i_wen;
 input wire							i_ren;
@@ -46,7 +44,7 @@ output wire							o_empty;
 wire							n_wen_ctrl;
 wire							n_ren_ctrl;
 wire							n_o_full;
-wire                     n_o_empty;
+wire                    				n_o_empty;
 wire		[UP_BIT-1:0]	n_addrr;
 wire		[UP_BIT-1:0]	n_addrw;
 wire not_use;

@@ -8,11 +8,11 @@ var fs = require('fs');
 
 /* GET home page. */
 router.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'verilog_test' });
 });
 
 router.post('/', function(req, res) {
-	req.file('files').upload({dirname: '/Users/thinhpham/Downloads/rvp/client/uploads'},function (err, uploadedFiles){
+	req.file('files').upload({dirname: './uploads'},function (err, uploadedFiles){
 	  if (err) return res.send(500, err);
 	  var session_id = uuid.v1();
 	  exec('mkdir ./uploads/' + session_id);
@@ -22,9 +22,9 @@ router.post('/', function(req, res) {
     var currentTime = new Date().toString();
     var logFile = currentTime + '.txt';
     var logStream = fs.createWriteStream('logs/' + logFile, {flags: 'a'});
-	  exec('cd rvp && perl ./rvp_test.pl ../uploads/' + session_id + '/*.v', function(err, stdout, stderr) {
-      logStream.write(stdout);
-		  return res.render('result', { result: stdout });
+    exec('cd rvp && perl ./rvp_test.pl ../uploads/' + session_id + '/*.v', function(err, stdout, stderr) {
+    logStream.write(stdout);
+    return res.render('result', { result: stdout });
 	  });
 	});
 });

@@ -1,44 +1,4 @@
-###############################################################################
-#
-# File:         rvp.pm
-# RCS:          $Header: /home/cc/v2html/build/../RCS/rvp.pm,v 7.61 2006/03/25 22:24:57 cc Exp $
-# Description:  The Rough Verilog Parser Perl Module
-# Author:       Costas Calamvokis
-# Created:      Fri Apr 10 16:59:30 1998
-# Modified:     Thu Jan 12 10:45:27 2006
-# Language:     Perl
-#
-# Copyright 1998-2006 Costas Calamvokis
-#
-#  This file nay be copied, modified and distributed only in accordance
-#  with the terms of the limited licence contained in the accompanying
-#  file LICENCE.TXT.
-#
-###############################################################################
-#
 
-=head1 rvp - Rough Verilog Parser Perl Module
-
-The basic idea is that first you call read_verilog will a list of all of your
-files. The files are parsed and information stored away. You are then 
-handed back a pointer to the information which you can use in calls
-to the various get_ function to get information about the verilog design.
-
-For Example:
-
- #!/usr/bin/perl -w
- use rvp;   # use the rough verilog parser
-
- # Read in all the files specified on the command line
- $vdata = rvp->read_verilog(\@ARGV,[],{},1,[],[],'');
-
- # Print out all the modules found
- foreach $module ($vdata->get_modules()) { print "$module\n"; }
-
-Unless you are doing something very strange, you can probably ignore all
-of the functions that have the words 'context' or 'anchors' in them!
-
-=cut
 
 package rvp;
 

@@ -1,17 +1,4 @@
 #!/usr/bin/perl -w -I ..
-###############################################################################
-#
-# File:         rvp_test.pl
-# RCS:          $Header: /home/cc/v2html/rvp_scripts/RCS/rvp_test.pl,v 1.6 2006/01/09 20:51:23 cc Exp $
-# Description:  Test RVP functions not used by v2html
-# Author:       Costas Calamvokis
-# Created:      Fri May  1 06:53:02 1998
-# Modified:     Mon Jan  9 20:51:16 2006
-# Language:     Perl
-#
-# Copyright (c) 1998-2006 Costas Calamvokis, all rights reserved.
-#
-###############################################################################
 
 require "./rvp.pm";
 use Data::Dumper;
@@ -129,12 +116,27 @@ sub find_string_in_file {
 foreach $module (sort $vdb->get_modules()) {
     &print_title("Module $module");
 
-    #Warning: Initial
     my ($module_path) = $vdb->get_modules_file($module);
-    my $initial_line = &find_string_in_file("initial", $module_path);
-    if($initial_line != -1) {
-      &print_warning("Initial block is not synthesizable! ($module_path:$initial_line)");
-    }
+    
+    #Warning: Initial
+     my $initial_line = &find_string_in_file("initial", $module_path);
+     if($initial_line != -1) {
+       &print_warning("Initial setting will be ignored in synthesize process! ($module_path:$initial_line)");
+     }
+
+
+    #Error: assign
+    # my $assign_line = &find_string_in_file("assign", $module_path);
+    # if(($assign_line != -1)&& ($type2 eq "reg"))  {
+    #   &print_error("variable should set as wire ($module_path:$assign_line)");
+    # }
+
+    #Error: if
+     #my $if_line = &find_string_in_file("if\s*+.(\s*\w*\s*=\s*\w*.)"|"else if\s*+.(\s*\w*\s*=\s*\w*.)", $module_path);
+     # if($if_line != -1)  {
+     # &print_error("equal "=" can not be used in condition statement ($module_path:$assign_line)");
+     #}
+
 
     #Warning: Delay
     my $delay_line = &find_string_in_file("#[0-9]+", $module_path);
@@ -143,10 +145,10 @@ foreach $module (sort $vdb->get_modules()) {
     }
 
     #Warning: Division
-    my $division_line = &find_string_in_file("[a-zA-Z0-9_\$]+\ *\/\ *[a-zA-Z0-9_\$]+", $module_path);
-    if($division_line != -1) {
-      &print_warning("Division is not synthesizable! ($module_path:$division_line)");
-    }
+    #my $division_line = &find_string_in_file("[a-zA-Z0-9_\$]+\ *\/\ *[a-zA-Z0-9_\$]+", $module_path);
+    #if($division_line != -1) {
+    #  &print_warning("Division is not synthesizable! ($module_path:$division_line)");
+    #}
 
     #Error: = is not condition
     # my $condition_line = &find_string_in_file("if\ +\(\ *[a-zA-Z][a-zA-Z0-9_\$]+\ *=[^=]", $module_path);
@@ -173,10 +175,10 @@ foreach $module (sort $vdb->get_modules()) {
     }
 
     #Warning: casex
-    my $casex_line = &find_string_in_file("casex", $module_path);
-    if($casex_line != -1) {
-      &print_warning("casex is not synthesizable! ($module_path:$casex_line)");
-    }
+    # my $casex_line = &find_string_in_file("casex", $module_path);
+    # if($casex_line != -1) {
+    #   &print_warning("casex is not synthesizable! ($module_path:$casex_line)");
+    # }
 
     %parameters = $vdb->get_modules_parameters($module);
     foreach my $p (sort keys %parameters) {
@@ -210,16 +212,23 @@ foreach $module (sort $vdb->get_modules()) {
 		&print_error("Input signal $sig has been declared as reg ($file:$line)");
 	}
   # Warning: Declared as integer
-  if($type2 eq "integer" || $type eq "integer") {
-    &print_warning("Signal $sig has been declared as integer ($file:$line)");
+  if($type eq "integer" || $type2 eq "integer") {
+    &print_warning("Signal $sig should not be declared as integer ($file:$line)");
   }
+
+   #Error: assign
+     my $assign_line = &find_string_in_file("assign", $module_path);
+     if(($assign_line != -1) and ($type2 eq "reg"|| $type eq "reg"))  {
+       &print_error("variable should set as wire ($module_path:$assign_line)");
+     }
+
   # Error: Variable has more than one definition
-  if(($type =~ m/input|output|inout/) && ($type2 =~ m/input|output|inout/)) {
-    &print_error("Signal $sig has more than one definition ($file:$line)");
-  }
-  #Warning: Variable has not been assigned
+  #if(($type =~ m/input|output|inout|reg|wire|integer/) && ($type2 =~ m/input|output|inout|reg|wire|integer/)) {
+   # &print_error("Signal $sig has more than one definition ($file:$line)");
+  #}
+  #Warning: Variable has not been used
   if($a_line == -1 and length $s_file == 0) {
-    &print_warning("Signal $sig has not been assigned! ($file:$line)");
+    &print_warning("Signal $sig has not been used. ($file:$line)");
   }
 	&log ("      defined  $file:$line\n");
 	&log ("      assigned $a_file:$a_line\n");
@@ -231,6 +240,9 @@ foreach $module (sort $vdb->get_modules()) {
 	foreach $dim (@$dims) {
 	    &log ("        dimension: $dim\n");
 	}
+
+ 
+
 
 
   for (($imod,$iname,$port,$l, $f) = 

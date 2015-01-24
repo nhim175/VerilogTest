@@ -1,7 +1,6 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: NEC Engineering 
+// Engineer: Hoang Anh Tuan
 // 
 // Create Date:    21:42:16 08/10/2014 
 // Design Name: 
@@ -15,8 +14,8 @@
 //
 // Revision: 
 // Revision 0.01 - File Created
-// Additional Comments: 
-//
+// Additional Comments: Please do not use or copy without agreement of the 
+//author.
 //////////////////////////////////////////////////////////////////////////////////
 module full_empty_ctrl(
      i_clk,
