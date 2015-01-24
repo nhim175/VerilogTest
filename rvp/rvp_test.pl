@@ -148,6 +148,12 @@ foreach $module (sort $vdb->get_modules()) {
       &print_warning("Division is not synthesizable! ($module_path:$division_line)");
     }
 
+    #Error: = is not condition
+    # my $condition_line = &find_string_in_file("if\ +\(\ *[a-zA-Z][a-zA-Z0-9_\$]+\ *=[^=]", $module_path);
+    # if($condition_line != -1) {
+    #   &print_warning("= is not condition! ($module_path:$division_line)"); 
+    # }
+
     #Warning: === !== operators
     my $operator_line = &find_string_in_file("===|!==", $module_path);
     if($operator_line != -1) {
@@ -204,7 +210,7 @@ foreach $module (sort $vdb->get_modules()) {
 		&print_error("Input signal $sig has been declared as reg ($file:$line)");
 	}
   # Warning: Declared as integer
-  if($type2 eq "integer") {
+  if($type2 eq "integer" || $type eq "integer") {
     &print_warning("Signal $sig has been declared as integer ($file:$line)");
   }
   # Error: Variable has more than one definition
