@@ -29,10 +29,16 @@ if (@problems) {
     # die "Warnings parsing files!";
 }
 
+
+sub ltrim { my $s = shift; $s =~ s/^\s+//;       return $s };
+sub rtrim { my $s = shift; $s =~ s/\s+$//;       return $s };
+sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
+
 # parse parameter into correct value
 # parameters: signal string, module contain signal
 sub parse_parameter {
 	my ($signal,$module) = @_;
+
 	unless (looks_like_number($signal)) {
 		my (%parameters) = $vdb->get_modules_parameters($module);
 		foreach my $p (keys %parameters) {
@@ -43,6 +49,29 @@ sub parse_parameter {
 		$signal = eval($signal);
 	}
 	return $signal;
+}
+
+sub get_width_from_range {
+  my ($range,$module) = @_;
+  if ($range =~ m/([^:]+?):([^:]+?)/) {
+    my $left = $1;
+    my $right = $2;
+    my ($left_val, $right_val);
+    if(looks_like_number($left)) {
+      $left_val = eval($left);
+    } else {
+      $left_val = &parse_parameter($left,$module);
+    }
+
+    if(looks_like_number($right)) {
+      $right_val = eval($right);
+    } else {
+      $right_val = &parse_parameter($right,$module);
+    }
+
+    return $left_val + 1 - $right_val;
+  }
+  return -1;
 }
 
 sub print_warning {
@@ -186,6 +215,62 @@ foreach $module (sort $vdb->get_modules()) {
     my $trigger_line = &find_string_in_file("->", $module_path);
     if($trigger_line != -1) {
       &print_warning("trigger is not synthesizable! ($module_path:$trigger_line)");
+    }
+
+    # Warning: overload
+    my ($file_path) = $vdb->get_files_full_name($module_path);
+    my ($in_comment_block) = false;
+    if (length $file_path != 0) {
+      my $fh;
+      open $fh, "<", $file_path or die "could not open $file_path!";
+      while(<$fh>) {
+
+        if(/\/\*/) { $in_comment_block = true; }
+        if(/\*\//) { $in_comment_block = false; }
+        if(not /(^`.*)|(^\/\/.*)/) { #comment or directives
+          if ($_ =~ m/((?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)\s*=\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))\s*\+\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))/ and $in_comment_block == false) {
+            my $left = trim($1);
+            my $right1 = trim($2);
+            my $right2 = trim($3);
+            my ($max_right1, $max_right2, $max_left, $right1_range, $right2_range);
+            ($l_line,$l_a_line,$l_i_line,$l_type,$l_file,$l_p,$l_n,
+         $l_type2,$l_r_file,$l_r_line,$l_range,$l_a_file,$l_i_file) = 
+                      $vdb->get_module_signal($module,$left);
+            my $left_range = $l_range;
+            if ($left =~ /\[([^:]+?:[^:]+?)\]/) {
+              $left_range = $1;
+            }
+
+            unless(looks_like_number($right1)) {
+              ($r1_line,$r1_a_line,$r1_i_line,$r1_type,$r1_file,$r1_p,$l_n,
+         $r1_type2,$r1_r_file,$r1_r_line,$r1_range,$r1_a_file,$r1_i_file) = 
+                      $vdb->get_module_signal($module,$right1);
+              $right1_range = $r1_range;
+              if ($right1 =~ /\[([^:]+?:[^:]+?)\]/) {
+                $right1_range = $1;
+              }
+            }
+
+            unless(looks_like_number($right2)) {
+              ($r2_line,$r2_a_line,$r2_i_line,$r2_type,$r2_file,$r2_p,$l_n,
+         $r2_type2,$r2_r_file,$r2_r_line,$r2_range,$r2_a_file,$r2_i_file) = 
+                      $vdb->get_module_signal($module,$right2);
+              $right2_range = $r2_range;
+              if ($right2 =~ /\[([^:]+?:[^:]+?)\]/) {
+                $right2_range = $1;
+              }
+            }
+
+            $max_left = &get_width_from_range($left_range, $module);
+            $max_right1 = &get_width_from_range($right1_range, $module);
+            $max_right2 = &get_width_from_range($right2_range, $module);
+
+            if($max_left <= $max_right1 or $max_left <= max_right2) {
+              &print_warning("Overload detected ($.:$module_path)")  
+            }
+          }
+        }
+      }
     }
 
     #Warning: casex
