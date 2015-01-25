@@ -109,17 +109,24 @@ sub log {
 }
 
 sub count_string_in_file {
-  my ($str,$file) = @_;
+  # return line number
+  my ($str, $file) = @_;
   my ($file_path) = $vdb->get_files_full_name($file);
+  my ($in_comment_block) = false;
+  my $count = 0;
   if (length $file_path == 0) {
-    return 0;
+    return -1;
   }
   my $fh;
   open $fh, "<", $file_path or die "could not open $file: $!";
-  my @contents = <$fh>;
-  my @filtered = grep (/${str}/ ,@contents);
-  close $fh;
-  return scalar @filtered;
+  while(<$fh>) {
+    if(/\/\*/) { $in_comment_block = true; }
+    if(/\*\//) { $in_comment_block = false; }
+    if(not /(^`.*)|(^\/\/.*)/) { #comment or directives
+      $count = $count + 1 if /$str/ and $in_comment_block == false;
+    }
+  }
+  return $count;
 }
 
 sub find_string_in_file {
@@ -215,6 +222,15 @@ foreach $module (sort $vdb->get_modules()) {
     my $trigger_line = &find_string_in_file("->", $module_path);
     if($trigger_line != -1) {
       &print_warning("trigger is not synthesizable! ($module_path:$trigger_line)");
+    }
+
+    # Error: begin end not match
+    my $begins = &count_string_in_file(qr/begin(\s|$)/, $module_path);
+    my $ends = &count_string_in_file(qr/end(\s|$)/, $module_path);
+    if ($begins < $ends) {
+      &print_error("found redundant ends");
+    } elsif ($begins > $ends) {
+      &print_error("found missing ends");
     }
 
     # Warning: overload
