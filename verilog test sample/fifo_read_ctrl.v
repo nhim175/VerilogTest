@@ -48,7 +48,6 @@ always @ (posedge i_clk) begin
 			 else begin
 					n_ren_ctrl = 1'b0;
 			 end
-      end
 end		
 
 endmodule

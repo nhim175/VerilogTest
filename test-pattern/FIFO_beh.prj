@@ -1,6 +1,0 @@
-verilog work "full_empty_ctrl.v"
-verilog work "fifo_write_control.v"
-verilog work "fifo_read_ctrl.v"
-verilog work "fifo_mem.v"
-verilog work "FIFO.v"
-verilog work "C:/Xilinx/13.1/ISE_DS/ISE//verilog/src/glbl.v"

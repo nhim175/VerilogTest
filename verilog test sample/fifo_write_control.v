@@ -36,7 +36,8 @@ output wire			o_wen_ctrl;
 reg			n_wen_ctrl;
 reg [2:0] a;
 wire [4:0] b;
-
+reg [2:0] x;
+reg [2:0] y;
 assign 		o_wen_ctrl = n_wen_ctrl;
 
 always @(posedge i_clk) begin
@@ -52,8 +53,14 @@ always @(posedge i_clk) begin
 			end
 	end
 end
+z= 3;
+
+if 5;
 
 assign b=a;
+ always @ (posedge i_clk) begin
+      a[1:0] = x+y;
+ end
 
 
 endmodule

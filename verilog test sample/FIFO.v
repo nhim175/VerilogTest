@@ -30,7 +30,7 @@ module FIFO(
 //parameter
 parameter WIDTH = 8;
 parameter DEPTH = 32;
-parameter UP_BIT =  (DEPTH ==16)? 4 : (DEPTH ==32)? 5 : 6  ;
+parameter UP_BIT = 6;
 //interface
 input wire							i_clk;
 input wire		[WIDTH-1:0]				i_data;
@@ -74,7 +74,7 @@ full_empty_ctrl #(UP_BIT,DEPTH) f_e_crt(
 		.i_clk (i_clk),
 		.i_rest(i_rest),
 		.i_addrw(n_addrw),
-		.i_addrr(n_addrr),
+		.i_addrr(n_addrr[3:0]),
 		.o_full (n_o_full),
 		.o_empty(n_o_empty)
        );
