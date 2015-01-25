@@ -164,7 +164,7 @@ sub get_line_in_file {
 }
 
 foreach $module (sort $vdb->get_modules()) {
-    &print_title("Module $module");
+    #&print_title("Module $module");
 
     my ($module_path) = $vdb->get_modules_file($module);
     
@@ -228,9 +228,9 @@ foreach $module (sort $vdb->get_modules()) {
     my $begins = &count_string_in_file(qr/begin(\s|$)/, $module_path);
     my $ends = &count_string_in_file(qr/end(\s|$)/, $module_path);
     if ($begins < $ends) {
-      &print_error("found redundant ends");
+      &print_error("found redundant ends ($module_path)");
     } elsif ($begins > $ends) {
-      &print_error("found missing ends");
+      &print_error("found missing ends ($module_path)");
     }
 
     # Warning: overload
@@ -367,7 +367,7 @@ foreach $module (sort $vdb->get_modules()) {
        $vdb->get_next_signal_port_con()) {
       my ($s_line,$s_a_line,$s_i_line,$s_type,$s_file,$s_p,$s_n, $s_type2,$s_r_file,$s_r_line,$range,$s_a_file,$s_i_file, $s_dimension, $s_width) = $vdb->get_module_signal($imod,$port);
       $s_width = &parse_parameter($s_width, $imod);
-      &log ("     connected to: port $port (width: $s_width) of instance $iname of $imod\n");
+      &log ("     connected to: port $port (width: $s_width) of instance $iname of $imod");
 
       # Check if port width mismatch
       my $line = &get_line_in_file($l, $f);
@@ -384,7 +384,6 @@ foreach $module (sort $vdb->get_modules()) {
   }
     }
 
-    print "\n";
     my @declared_instances = ();
     for (($imod,$f,$iname,$l) = $vdb->get_first_instantiation($module );
 	       $imod;
@@ -421,7 +420,7 @@ foreach $module (sort $vdb->get_modules()) {
 
 
     }
-    print "\n";
+    #print "\n";
 
 }
 
