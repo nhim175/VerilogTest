@@ -46,7 +46,7 @@ sub _parse_line {
 	$posMark =~ tr/	/ /c ; # turn anything that isn't a tab into a space
 	$posMark .= "^" ;
 	if (substr($code,length($code)-1,1) ne "\n") { $posMark="\n".$posMark; }
-	$self->_add_confused("$file:$line: in state $ps->{prevState}:\n".
+	$self->_add_error("$file:$line: Unknown statement (check syntax):\n".
 		    "$code".$posMark);
 	@{$ps->{nextStateStack}} = ($ps->{confusedNextState});
        return; # ignore the rest of the line
