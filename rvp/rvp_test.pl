@@ -17,7 +17,7 @@ $production 	= 1;
 $debug 		= 0;
 
 print "<div class='hidden'>";
-$vdb = rvp->read_verilog(\@files,[],\%cmd_line_defines,
+$vdb = $rvp->read_verilog(\@files,[],\%cmd_line_defines,
 			  $quiet,\@inc_dirs,\@lib_dirs,\@lib_exts);
 print "</div>";
 my @problems = $vdb->get_problems();
@@ -244,7 +244,7 @@ foreach $module (sort $vdb->get_modules()) {
         if(/\/\*/) { $in_comment_block = true; }
         if(/\*\//) { $in_comment_block = false; }
         if(not /(^`.*)|(^\/\/.*)/) { #comment or directives
-          if ($_ =~ m/((?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)\s*=\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))\s*\(?:+|-)\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))/ and $in_comment_block == false) {
+          if ($_ =~ m/((?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)\s*=\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))\s*\(?:+|-\)\s*((?:(?:(?:[A-Za-z_][A-Za-z_0-9\$]*|\\\\\S+)\s*(?:\[\s*(?:\d+)\s*\:\s*(?:\d+)\s*\])?)|\d+))/ and $in_comment_block == false) {
             my $left = trim($1);
             my $right1 = trim($2);
             my $right2 = trim($3);
