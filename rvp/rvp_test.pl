@@ -17,7 +17,7 @@ $production 	= 1;
 $debug 		= 0;
 
 print "<div class='hidden'>";
-$vdb = $rvp->read_verilog(\@files,[],\%cmd_line_defines,
+$vdb = rvp->read_verilog(\@files,[],\%cmd_line_defines,
 			  $quiet,\@inc_dirs,\@lib_dirs,\@lib_exts);
 print "</div>";
 my @problems = $vdb->get_problems();
