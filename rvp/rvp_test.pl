@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w -I ..
 
-require "./rvp.pm";
+use rvp;
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
 use Term::ANSIColor qw(:constants);
@@ -17,7 +17,7 @@ $production 	= 1;
 $debug 		= 0;
 
 print "<div class='hidden'>";
-$vdb = $rvp->read_verilog(\@files,[],\%cmd_line_defines,
+$vdb = rvp->read_verilog(\@files,[],\%cmd_line_defines,
 			  $quiet,\@inc_dirs,\@lib_dirs,\@lib_exts);
 print "</div>";
 my @problems = $vdb->get_problems();
@@ -98,7 +98,7 @@ sub print_title {
 		print "<span class='title'>$str</span><br/><br/>";
 	} else {
 		print BOLD, "$str!\n\n", RESET;
-	}	
+	}
 }
 
 sub log {
@@ -155,7 +155,7 @@ sub get_line_in_file {
   open my $fh, '<', $file_path or die "$file_path: $!";
   my $line;
   while( <$fh> ) {
-      if( $. == $lineWanted ) { 
+      if( $. == $lineWanted ) {
           $line = $_;
           return $line;
           last;
@@ -167,7 +167,7 @@ foreach $module (sort $vdb->get_modules()) {
     #&print_title("Module $module");
 
     my ($module_path) = $vdb->get_modules_file($module);
-    
+
     #Warning: Initial
      my $initial_line = &find_string_in_file("initial", $module_path);
      if($initial_line != -1) {
@@ -203,7 +203,7 @@ foreach $module (sort $vdb->get_modules()) {
     #Error: = is not condition
     # my $condition_line = &find_string_in_file("if\ +\(\ *[a-zA-Z][a-zA-Z0-9_\$]+\ *=[^=]", $module_path);
     # if($condition_line != -1) {
-    #   &print_warning("= is not condition! ($module_path:$division_line)"); 
+    #   &print_warning("= is not condition! ($module_path:$division_line)");
     # }
 
     #Warning: === !== operators
@@ -250,7 +250,7 @@ foreach $module (sort $vdb->get_modules()) {
             my $right2 = trim($3);
             my ($max_right1, $max_right2, $max_left, $right1_range, $right2_range);
             ($l_line,$l_a_line,$l_i_line,$l_type,$l_file,$l_p,$l_n,
-         $l_type2,$l_r_file,$l_r_line,$l_range,$l_a_file,$l_i_file) = 
+         $l_type2,$l_r_file,$l_r_line,$l_range,$l_a_file,$l_i_file) =
                       $vdb->get_module_signal($module,$left);
             my $left_range = $l_range;
             if ($left =~ /\[([^:]+?:[^:]+?)\]/) {
@@ -259,7 +259,7 @@ foreach $module (sort $vdb->get_modules()) {
 
             unless(looks_like_number($right1)) {
               ($r1_line,$r1_a_line,$r1_i_line,$r1_type,$r1_file,$r1_p,$l_n,
-         $r1_type2,$r1_r_file,$r1_r_line,$r1_range,$r1_a_file,$r1_i_file) = 
+         $r1_type2,$r1_r_file,$r1_r_line,$r1_range,$r1_a_file,$r1_i_file) =
                       $vdb->get_module_signal($module,$right1);
               $right1_range = $r1_range;
               if ($right1 =~ /\[([^:]+?:[^:]+?)\]/) {
@@ -269,7 +269,7 @@ foreach $module (sort $vdb->get_modules()) {
 
             unless(looks_like_number($right2)) {
               ($r2_line,$r2_a_line,$r2_i_line,$r2_type,$r2_file,$r2_p,$l_n,
-         $r2_type2,$r2_r_file,$r2_r_line,$r2_range,$r2_a_file,$r2_i_file) = 
+         $r2_type2,$r2_r_file,$r2_r_line,$r2_range,$r2_a_file,$r2_i_file) =
                       $vdb->get_module_signal($module,$right2);
               $right2_range = $r2_range;
               if ($right2 =~ /\[([^:]+?:[^:]+?)\]/) {
@@ -282,7 +282,7 @@ foreach $module (sort $vdb->get_modules()) {
             $max_right2 = &get_width_from_range($right2_range, $module);
 
             if($max_left <= $max_right1 or $max_left <= max_right2) {
-              &print_warning("Overload detected ($.:$module_path)")  
+              &print_warning("Overload detected ($.:$module_path)")
             }
           }
         }
@@ -311,7 +311,7 @@ foreach $module (sort $vdb->get_modules()) {
 
     foreach $sig (sort $vdb->get_modules_signals($module)) {
 	($line,$a_line,$i_line,$type,$file,$posedge,$negedge,
-	 $type2,$s_file,$s_line,$range,$a_file,$i_file,$dims, $width) = 
+	 $type2,$s_file,$s_line,$range,$a_file,$i_file,$dims, $width) =
 	   $vdb->get_module_signal($module,$sig);
 
     # Check if variable is not used
@@ -356,14 +356,14 @@ foreach $module (sort $vdb->get_modules()) {
 	    &log ("        dimension: $dim\n");
 	}
 
- 
 
 
 
-  for (($imod,$iname,$port,$l, $f) = 
+
+  for (($imod,$iname,$port,$l, $f) =
        $vdb->get_first_signal_port_con($module,$sig );
        $imod;
-       ($imod,$iname,$port,$l, $f) = 
+       ($imod,$iname,$port,$l, $f) =
        $vdb->get_next_signal_port_con()) {
       my ($s_line,$s_a_line,$s_i_line,$s_type,$s_file,$s_p,$s_n, $s_type2,$s_r_file,$s_r_line,$range,$s_a_file,$s_i_file, $s_dimension, $s_width) = $vdb->get_module_signal($imod,$port);
       $s_width = &parse_parameter($s_width, $imod);
